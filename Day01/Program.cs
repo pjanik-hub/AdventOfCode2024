@@ -32,7 +32,31 @@ namespace Day01
 			List<int> left = [];
 			List<int> right = [];
 
+            foreach (string line in lines)
+            {
+				// sep by "     "
+				string[] split = line.Split();
 
-		}
+				// assume file/format is good
+				_ = int.TryParse(split.First(), out int leftInt);
+				_ = int.TryParse(split.Last(), out int rightInt);
+
+				left.Add(leftInt);
+				right.Add(rightInt);
+			}
+
+			// Lists should be sorted by ascending, min to min, max to max
+			left.Sort();
+			right.Sort();
+
+			// find the distances between each pair!
+			List<int> distances = left.Zip(right, (l, r) => Math.Abs(l - r)).ToList();
+
+			int answer = distances.Sum();
+
+			Console.WriteLine($"Answer: { answer }");
+			Console.Write("Press any key to continue... ");
+			Console.ReadKey();
+        }
 	}
 }
