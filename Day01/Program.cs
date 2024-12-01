@@ -1,7 +1,4 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Collections.Generic;
-
-namespace Day01
+﻿namespace Day01
 {
 	internal class Program
 	{
