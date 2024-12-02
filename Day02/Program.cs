@@ -32,123 +32,92 @@ namespace Day02
 
             Part1(reactorValues);
             Part2(reactorValues);
+            Console.ReadKey();
         }
 
-        static void Part1(List<List<int>> reactorValues)
-        {
-            /**
-             * The engineers are trying to figure out which reports are safe. 
-             * The Red-Nosed reactor safety systems can only tolerate levels that are either gradually increasing or gradually decreasing.
-             * So, a report only counts as safe if both of the following are true:
-             * - The levels are either all increasing or all decreasing.
-             * - Any two adjacent levels differ by at least one and at most three.
-             *  7 6 4 2 1
-             *  1 2 7 8 9
-             *  9 7 6 2 1
-             *  1 3 2 4 5
-             *  8 6 4 4 1
-             *  1 3 6 7 9
-             *  
-             *  
-             */
-            int answer = 0;
+		static void Part1(List<List<int>> reactorValues)
+		{
+			const int maxDistance = 3;
+			int answer = 0;
 
-            List<bool> safetyValues = [];
+			List<bool> safetyValues = [];
 
-            foreach (List<int> row in reactorValues)
-            {
-                // fwd: +1
-                // bwd: -1
-                bool isSafe = true;
-                int direction = row[1] - row [0] > 0 ? 1 : -1;
+			foreach (List<int> row in reactorValues)
+			{
+				bool isSafe = IsRowSafe(row, maxDistance);
+				safetyValues.Add(isSafe);
+			}
 
-                for (int i = 0; i < row.Count - 1; i++)
-                {
-                    int distance = row[i + 1] - row[i];
+			answer = safetyValues.Where(e => e == true).Count();
 
-                    // going in the correct direction?
-                    isSafe &= direction == 1 ? int.IsPositive(distance) : int.IsNegative(distance);
+			Console.WriteLine($"Part 1 Answer: {answer}");
+		}
 
-                    // within 1 and 3 distance?
-                    isSafe &= Math.Abs(distance) > 0 && Math.Abs(distance) <= 3;
-                }
+		static void Part2(List<List<int>> reactorValues)
+		{
+			const int maxDistance = 3;
+			int answer = 0;
+			const int maxErrors = 1;
+			int errors;
 
-                safetyValues.Add(isSafe);
-            }
+			List<bool> safetyValues = [];
 
-            answer = safetyValues.Where(e => e == true).Count();
+			foreach (List<int> row in reactorValues)
+			{
+				bool isSafe = IsRowSafe(row, maxDistance);
+				errors = 0;
 
-            Console.WriteLine($"Part 1 Answer: { answer }");
-        }
+				if (!isSafe && errors++ < maxErrors)
+				{
+					for (int i = 0; i < row.Count; i++)
+					{
+						List<int> modifiedRow = new(row);
+						modifiedRow.RemoveAt(i);
 
-        static void Part2(List<List<int>> reactorValues)
-        {
-            const int maxDistance = 3;
-            const int errorTolerance = 1;
-            int answer = 0;
+						if (IsRowSafe(modifiedRow, maxDistance))
+						{
+							isSafe = true;
+							break;
+						}
+					}
+				}
 
-            List<bool> safetyValues = [];
+				safetyValues.Add(isSafe);
+			}
 
-            foreach (List<int> row in reactorValues)
-            {
-                // fwd: +1
-                // bwd: -1
-                bool isSafe = true;
-                int errorTotal = 0;
+			answer = safetyValues.Where(e => e == true).Count();
 
-                for (int i = 0; i < row.Count - 1; i++)
-                {
-                    int direction = row[1] - row[0] > 0 ? 1 : -1;
-                    int distance = row[i + 1] - row[i];
+			Console.WriteLine($"Part 2 Answer: {answer}");
+		}
 
-                    // going in the correct direction?
-                    isSafe &= direction == 1 ? int.IsPositive(distance) : int.IsNegative(distance);
+		/// <summary>
+		/// True if the row contains no errors. I.e. is within tolerable distance (3)
+		/// and is strictly in ascending or descending
+		/// </summary>
+		/// <param name="row">A row of integers</param>
+		/// <param name="maxDistance">The max tolerable distance</param>
+		/// <returns>True if valid, false otherwise</returns>
+		static bool IsRowSafe(List<int> row, int maxDistance)
+		{
+			if (row.Count < 2) return false;
 
-                    // within 1 and 3 distance?
-                    isSafe &= Math.Abs(distance) > 0 && Math.Abs(distance) <= maxDistance;
+            // going up or down
+			int direction = row[1] - row[0] > 0 ? 1 : -1;
 
-                    if (!isSafe && errorTotal++ < errorTolerance)
-                    {
-                        int? a = i - 1 >= 0 ? i - 1 : null;
-                        int b = i;
-                        int? c = i + 1 < row.Count ? i + 1 : null;
+			for (int i = 0; i < row.Count - 1; i++)
+			{
+				int distance = row[i + 1] - row[i];
 
-                        int indexToRemove = IndexToRemove(a, b, c, direction == 1);
-                        row.RemoveAt(i + 1);
-                        isSafe = true; // reset
-                    }
-                }
+				// going in the correct direction?
+				if ((direction == 1 && distance <= 0) || (direction == -1 && distance >= 0))
+					return false;
 
-                safetyValues.Add(isSafe);
-            }
+				// within 1 and 3 distance?
+				if (Math.Abs(distance) < 1 || Math.Abs(distance) > maxDistance)
+					return false;
+			}
 
-            answer = safetyValues.Where(e => e == true).Count();
-
-            Console.WriteLine($"Part 2 Answer: {answer}");
-        }
-
-        static int IndexToRemove(int? a, int b, int? c, int direction)
-        {
-            const int maxDistance = 3;
-            int distance = 0;
-            int direction = 0;
-
-            if (a is null)
-            {
-                distance = (int)(c! - b);
-            }
-            else if (c is null)
-            {
-                distance = (int)(b - a!);
-            }
-            else // both are non-null
-            {
-                int firstDistance = (int)(c! - b);
-                int secondDistance = (int)(b! - a);
-
-                int firstDirection = int.IsPositive(firstDistance) ? 1 : -1;
-                int secondDirection = int.IsPositive(secondDistance) ? 1 : -1;
-            }
-        }
-    }
+			return true;
+		}
+	}
 }
