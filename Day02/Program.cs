@@ -1,4 +1,6 @@
-﻿namespace Day02
+﻿using System.Runtime.CompilerServices;
+
+namespace Day02
 {
     internal class Program
     {
@@ -29,6 +31,7 @@
             #endregion
 
             Part1(reactorValues);
+            Part2(reactorValues);
         }
 
         static void Part1(List<List<int>> reactorValues)
@@ -75,7 +78,77 @@
 
             answer = safetyValues.Where(e => e == true).Count();
 
-            Console.WriteLine($"Answer: { answer }");
+            Console.WriteLine($"Part 1 Answer: { answer }");
+        }
+
+        static void Part2(List<List<int>> reactorValues)
+        {
+            const int maxDistance = 3;
+            const int errorTolerance = 1;
+            int answer = 0;
+
+            List<bool> safetyValues = [];
+
+            foreach (List<int> row in reactorValues)
+            {
+                // fwd: +1
+                // bwd: -1
+                bool isSafe = true;
+                int errorTotal = 0;
+
+                for (int i = 0; i < row.Count - 1; i++)
+                {
+                    int direction = row[1] - row[0] > 0 ? 1 : -1;
+                    int distance = row[i + 1] - row[i];
+
+                    // going in the correct direction?
+                    isSafe &= direction == 1 ? int.IsPositive(distance) : int.IsNegative(distance);
+
+                    // within 1 and 3 distance?
+                    isSafe &= Math.Abs(distance) > 0 && Math.Abs(distance) <= maxDistance;
+
+                    if (!isSafe && errorTotal++ < errorTolerance)
+                    {
+                        int? a = i - 1 >= 0 ? i - 1 : null;
+                        int b = i;
+                        int? c = i + 1 < row.Count ? i + 1 : null;
+
+                        int indexToRemove = IndexToRemove(a, b, c, direction == 1);
+                        row.RemoveAt(i + 1);
+                        isSafe = true; // reset
+                    }
+                }
+
+                safetyValues.Add(isSafe);
+            }
+
+            answer = safetyValues.Where(e => e == true).Count();
+
+            Console.WriteLine($"Part 2 Answer: {answer}");
+        }
+
+        static int IndexToRemove(int? a, int b, int? c, int direction)
+        {
+            const int maxDistance = 3;
+            int distance = 0;
+            int direction = 0;
+
+            if (a is null)
+            {
+                distance = (int)(c! - b);
+            }
+            else if (c is null)
+            {
+                distance = (int)(b - a!);
+            }
+            else // both are non-null
+            {
+                int firstDistance = (int)(c! - b);
+                int secondDistance = (int)(b! - a);
+
+                int firstDirection = int.IsPositive(firstDistance) ? 1 : -1;
+                int secondDirection = int.IsPositive(secondDistance) ? 1 : -1;
+            }
         }
     }
 }
