@@ -36,20 +36,28 @@
 			{
 				for (int j = 0; j < cols; j++)
 				{
-					// horizontally
+					// horizontally forward and backward
 					if (j <= cols - sLen && HasSubstring(grid, substring, i, j, 0, 1, 0))
 						total++;
+					if (j >= sLen - 1 && HasSubstring(grid, substring, i, j, 0, -1, 0))
+						total++;
 
-					// vertically
+					// vertically forward and backward
 					if (i <= rows - sLen && HasSubstring(grid, substring, i, j, 1, 0, 0))
 						total++;
-
-					// diagonally (down-right)
-					if (i <= rows - sLen && j <= cols - sLen && HasSubstring(grid, substring, i, j, 1, 1, 0))
+					if (i >= sLen - 1 && HasSubstring(grid, substring, i, j, -1, 0, 0))
 						total++;
 
-					// diagonally (down-left)
+					// diagonally (down-right and up-left)
+					if (i <= rows - sLen && j <= cols - sLen && HasSubstring(grid, substring, i, j, 1, 1, 0))
+						total++;
+					if (i >= sLen - 1 && j >= sLen - 1 && HasSubstring(grid, substring, i, j, -1, -1, 0))
+						total++;
+
+					// diagonally (down-left and up-right)
 					if (i <= rows - sLen && j >= sLen - 1 && HasSubstring(grid, substring, i, j, 1, -1, 0))
+						total++;
+					if (i >= sLen - 1 && j <= cols - sLen && HasSubstring(grid, substring, i, j, -1, 1, 0))
 						total++;
 				}
 			}
