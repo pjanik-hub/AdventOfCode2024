@@ -10,22 +10,36 @@ namespace Day03
 			string[] lines = File.ReadAllLines("input.txt");
 
 			int totalSum = 0;
+			bool calc = true;
 			// regex matching
-			Regex regex = new Regex(@"mul\((\d+),(\d+)\)");
+			Regex instructionRegex = new Regex(@"(mul\((\d+),(\d+)\))|(do\(\))|(don't\(\))");
 
 			// iterate over each row...
 			foreach (string line in lines)
 			{
-				MatchCollection collection = regex.Matches(line);
+				MatchCollection matches = instructionRegex.Matches(line);
 
-                foreach (Match match in collection)
-                {
-					int a = int.Parse(match.Groups[1].Value);
-					int b = int.Parse(match.Groups[2].Value);
-
-					totalSum += a * b;
+				foreach (Match match in matches)
+				{
+					if (match.Groups[1].Success) // mul() match
+					{
+						if (calc)
+						{
+							int a = int.Parse(match.Groups[2].Value);
+							int b = int.Parse(match.Groups[3].Value);
+							totalSum += a * b;
+						}
+					}
+					else if (match.Groups[4].Success) // do() match
+					{
+						calc = true;
+					}
+					else if (match.Groups[5].Success) // don't() match
+					{
+						calc = false;
+					}
 				}
-            }
+			}
 
 			Console.WriteLine($"Answer: {totalSum}");
 			Console.ReadKey();
